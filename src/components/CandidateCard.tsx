@@ -20,12 +20,12 @@ export function CandidateCard({
   selected,
   className 
 }: CandidateCardProps) {
-  const initials = candidate.name
+  const initials = (candidate?.name || "")
     .split(" ")
-    .map((n) => n[0])
+    .map((n) => n?.[0] || "")
     .join("")
     .toUpperCase()
-    .slice(0, 2);
+    .slice(0, 2) || "?";
 
   return (
     <Card 
