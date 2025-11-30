@@ -558,6 +558,17 @@ export default function CandidateEvaluation() {
     },
   });
 
+  // Clear evaluation when candidate or job changes
+  const handleCandidateChange = (value: string) => {
+    setSelectedCandidate(value);
+    setCurrentEvaluation(null);
+  };
+
+  const handleJobChange = (value: string) => {
+    setSelectedJob(value);
+    setCurrentEvaluation(null);
+  };
+
   // Candidate Evaluation mutation
   const { 
     mutate: evaluateCandidateMutation, 
@@ -701,7 +712,7 @@ export default function CandidateEvaluation() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col md:flex-row gap-4">
-                  <Select value={selectedCandidate} onValueChange={setSelectedCandidate}>
+                  <Select value={selectedCandidate} onValueChange={handleCandidateChange}>
                     <SelectTrigger className="flex-1">
                       <SelectValue placeholder="Select a candidate" />
                     </SelectTrigger>
@@ -717,7 +728,7 @@ export default function CandidateEvaluation() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={selectedJob} onValueChange={setSelectedJob}>
+                  <Select value={selectedJob} onValueChange={handleJobChange}>
                     <SelectTrigger className="flex-1">
                       <SelectValue placeholder="Select a job" />
                     </SelectTrigger>
