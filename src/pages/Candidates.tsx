@@ -47,7 +47,7 @@ export default function Candidates() {
   });
 
   const evaluateMutation = useMutation({
-    mutationFn: ({ candidateId, jobId }: { candidateId: number; jobId: string }) =>
+    mutationFn: ({ candidateId, jobId }: { candidateId: number | string; jobId: string }) =>
       evaluateCandidate(candidateId, jobId),
     onSuccess: (data) => {
       setEvaluationResult(data);
