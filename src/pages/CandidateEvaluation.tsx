@@ -75,7 +75,18 @@ function LoadingSkeleton() {
 }
 
 function GitHubResults({ data }: { data: GitHubAnalysis }) {
-  const riskLevel = getRiskLevel(data.overall_risk_score);
+  const riskLevel = getRiskLevel(data?.overall_risk_score ?? 0);
+
+  // Safe accessors for nested properties
+  const originality = data?.originality_check ?? { score: 0, status: "unknown", details: "N/A" };
+  const commitAuth = data?.commit_pattern_authenticity ?? { score: 0, status: "unknown", details: "N/A" };
+  const codeQuality = data?.code_quality ?? { score: 0, rating: "N/A", details: "N/A" };
+  const techStack = data?.tech_stack_verification ?? { match_score: 0, verified_skills: [], claimed_vs_actual: "N/A" };
+  const projectDepth = data?.project_depth ?? { score: 0, level: "N/A", details: "N/A" };
+  const aiCheck = data?.ai_generated_code_check ?? { ai_probability: 0, status: "unknown", details: "N/A" };
+  const timeline = data?.activity_timeline_consistency ?? { consistency_score: 0, details: "N/A" };
+  const repoHealth = data?.repo_health_score ?? { score: 0, details: "N/A" };
+  const skillValidation = data?.skill_validation ?? { derived_skills: [], proficiency: "N/A" };
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -85,16 +96,16 @@ function GitHubResults({ data }: { data: GitHubAnalysis }) {
             <h1 className="text-4xl font-bold text-foreground">GitHub Analysis</h1>
             <p className="text-muted-foreground mt-2 flex items-center gap-2">
               <Github className="h-4 w-4" />
-              Profile: @{data.username}
+              Profile: @{data?.username ?? "Unknown"}
             </p>
           </div>
           <div className="text-right">
             <p className="text-sm text-muted-foreground mb-2">Overall Risk Score</p>
             <div className="flex items-center gap-3">
-              <ScoreCircle score={100 - data.overall_risk_score} size="lg" />
+              <ScoreCircle score={100 - (data?.overall_risk_score ?? 0)} size="lg" />
               <div>
                 <p className={cn("text-2xl font-bold", riskLevel.color)}>{riskLevel.label}</p>
-                <p className="text-sm text-muted-foreground">Score: {data.overall_risk_score}/100</p>
+                <p className="text-sm text-muted-foreground">Score: {data?.overall_risk_score ?? 0}/100</p>
               </div>
             </div>
           </div>
@@ -109,12 +120,12 @@ function GitHubResults({ data }: { data: GitHubAnalysis }) {
                 <GitBranch className="h-5 w-5 text-accent" />
                 Originality
               </CardTitle>
-              {getStatusIcon(data.originality_check.status)}
+              {getStatusIcon(originality.status)}
             </div>
-            <CardDescription>{data.originality_check.details}</CardDescription>
+            <CardDescription>{originality.details}</CardDescription>
           </CardHeader>
           <CardContent>
-            <ScoreBar score={data.originality_check.score} label="Originality Score" />
+            <ScoreBar score={originality.score} label="Originality Score" />
           </CardContent>
         </Card>
 
@@ -125,12 +136,12 @@ function GitHubResults({ data }: { data: GitHubAnalysis }) {
                 <Activity className="h-5 w-5 text-accent" />
                 Commit Authenticity
               </CardTitle>
-              {getStatusIcon(data.commit_pattern_authenticity.status)}
+              {getStatusIcon(commitAuth.status)}
             </div>
-            <CardDescription>{data.commit_pattern_authenticity.details}</CardDescription>
+            <CardDescription>{commitAuth.details}</CardDescription>
           </CardHeader>
           <CardContent>
-            <ScoreBar score={data.commit_pattern_authenticity.score} label="Authenticity Score" />
+            <ScoreBar score={commitAuth.score} label="Authenticity Score" />
           </CardContent>
         </Card>
 
@@ -141,14 +152,14 @@ function GitHubResults({ data }: { data: GitHubAnalysis }) {
                 <Code className="h-5 w-5 text-accent" />
                 Code Quality
               </CardTitle>
-              <Badge variant={data.code_quality.score >= 70 ? "default" : data.code_quality.score >= 50 ? "secondary" : "destructive"}>
-                Grade {data.code_quality.rating}
+              <Badge variant={codeQuality.score >= 70 ? "default" : codeQuality.score >= 50 ? "secondary" : "destructive"}>
+                Grade {codeQuality.rating}
               </Badge>
             </div>
-            <CardDescription>{data.code_quality.details}</CardDescription>
+            <CardDescription>{codeQuality.details}</CardDescription>
           </CardHeader>
           <CardContent>
-            <ScoreBar score={data.code_quality.score} label="Quality Score" />
+            <ScoreBar score={codeQuality.score} label="Quality Score" />
           </CardContent>
         </Card>
       </div>
@@ -160,16 +171,20 @@ function GitHubResults({ data }: { data: GitHubAnalysis }) {
               <Star className="h-5 w-5 text-accent" />
               Tech Stack Verification
             </CardTitle>
-            <CardDescription>{data.tech_stack_verification.claimed_vs_actual}</CardDescription>
+            <CardDescription>{techStack.claimed_vs_actual}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ScoreBar score={data.tech_stack_verification.match_score} label="Match Score" />
+            <ScoreBar score={techStack.match_score} label="Match Score" />
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-2">Verified Skills</p>
               <div className="flex flex-wrap gap-2">
-                {data.tech_stack_verification.verified_skills.map((skill) => (
-                  <Badge key={skill} variant="secondary">{skill}</Badge>
-                ))}
+                {techStack.verified_skills.length > 0 ? (
+                  techStack.verified_skills.map((skill) => (
+                    <Badge key={skill} variant="secondary">{skill}</Badge>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground text-sm">No skills verified</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -181,13 +196,13 @@ function GitHubResults({ data }: { data: GitHubAnalysis }) {
               <TrendingUp className="h-5 w-5 text-accent" />
               Project Depth
             </CardTitle>
-            <CardDescription>{data.project_depth.details}</CardDescription>
+            <CardDescription>{projectDepth.details}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ScoreBar score={data.project_depth.score} label="Depth Score" />
+            <ScoreBar score={projectDepth.score} label="Depth Score" />
             <div className="flex items-center gap-2">
               <Badge variant="default" className="text-lg px-4 py-2">
-                {data.project_depth.level}
+                {projectDepth.level}
               </Badge>
             </div>
           </CardContent>
@@ -205,12 +220,12 @@ function GitHubResults({ data }: { data: GitHubAnalysis }) {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Status</span>
-              <Badge variant={data.ai_generated_code_check.ai_probability < 30 ? "default" : "destructive"}>
-                {data.ai_generated_code_check.status}
+              <Badge variant={aiCheck.ai_probability < 30 ? "default" : "destructive"}>
+                {aiCheck.status}
               </Badge>
             </div>
-            <ScoreBar score={100 - data.ai_generated_code_check.ai_probability} label="Human Code Probability" />
-            <p className="text-sm text-muted-foreground">{data.ai_generated_code_check.details}</p>
+            <ScoreBar score={100 - aiCheck.ai_probability} label="Human Code Probability" />
+            <p className="text-sm text-muted-foreground">{aiCheck.details}</p>
           </CardContent>
         </Card>
 
@@ -222,8 +237,8 @@ function GitHubResults({ data }: { data: GitHubAnalysis }) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ScoreBar score={data.activity_timeline_consistency.consistency_score} label="Consistency Score" />
-            <p className="text-sm text-muted-foreground">{data.activity_timeline_consistency.details}</p>
+            <ScoreBar score={timeline.consistency_score} label="Consistency Score" />
+            <p className="text-sm text-muted-foreground">{timeline.details}</p>
           </CardContent>
         </Card>
 
@@ -235,8 +250,8 @@ function GitHubResults({ data }: { data: GitHubAnalysis }) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ScoreBar score={data.repo_health_score.score} label="Health Score" />
-            <p className="text-sm text-muted-foreground">{data.repo_health_score.details}</p>
+            <ScoreBar score={repoHealth.score} label="Health Score" />
+            <p className="text-sm text-muted-foreground">{repoHealth.details}</p>
           </CardContent>
         </Card>
       </div>
@@ -247,15 +262,19 @@ function GitHubResults({ data }: { data: GitHubAnalysis }) {
             <Code className="h-5 w-5 text-accent" />
             Skill Validation
           </CardTitle>
-          <CardDescription>Proficiency Level: <Badge variant="default">{data.skill_validation.proficiency}</Badge></CardDescription>
+          <CardDescription>Proficiency Level: <Badge variant="default">{skillValidation.proficiency}</Badge></CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            {data.skill_validation.derived_skills.map((skill) => (
-              <Badge key={skill} variant="secondary" className="text-base px-4 py-2">
-                {skill}
-              </Badge>
-            ))}
+            {skillValidation.derived_skills.length > 0 ? (
+              skillValidation.derived_skills.map((skill) => (
+                <Badge key={skill} variant="secondary" className="text-base px-4 py-2">
+                  {skill}
+                </Badge>
+              ))
+            ) : (
+              <p className="text-muted-foreground text-sm">No skills derived</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -264,6 +283,14 @@ function GitHubResults({ data }: { data: GitHubAnalysis }) {
 }
 
 function CandidateEvaluationResults({ data, candidateName }: { data: EvaluationResult; candidateName: string }) {
+  // Safe accessors with defaults
+  const overallScore = data?.overall_score ?? 0;
+  const authenticityScore = data?.authenticity_score ?? 0;
+  const skillMatchScore = data?.skill_match_score ?? 0;
+  const summary = data?.summary ?? "No summary available";
+  const strengths = data?.strengths ?? [];
+  const redFlags = data?.red_flags ?? [];
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
@@ -278,10 +305,10 @@ function CandidateEvaluationResults({ data, candidateName }: { data: EvaluationR
       <Card variant="accent">
         <CardContent className="py-8">
           <div className="flex flex-col md:flex-row items-center justify-center gap-8">
-            <ScoreCircle score={data.overall_score} size="lg" label="Overall Score" />
+            <ScoreCircle score={overallScore} size="lg" label="Overall Score" />
             <div className="flex gap-8">
-              <ScoreCircle score={data.authenticity_score} size="md" label="Authenticity" />
-              <ScoreCircle score={data.skill_match_score} size="md" label="Skill Match" />
+              <ScoreCircle score={authenticityScore} size="md" label="Authenticity" />
+              <ScoreCircle score={skillMatchScore} size="md" label="Skill Match" />
             </div>
           </div>
         </CardContent>
@@ -296,9 +323,9 @@ function CandidateEvaluationResults({ data, candidateName }: { data: EvaluationR
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <ScoreBar score={data.authenticity_score} label="Profile Authenticity" />
-          <ScoreBar score={data.skill_match_score} label="Skills Match" />
-          <ScoreBar score={data.overall_score} label="Overall Fit" />
+          <ScoreBar score={authenticityScore} label="Profile Authenticity" />
+          <ScoreBar score={skillMatchScore} label="Skills Match" />
+          <ScoreBar score={overallScore} label="Overall Fit" />
         </CardContent>
       </Card>
 
@@ -311,7 +338,7 @@ function CandidateEvaluationResults({ data, candidateName }: { data: EvaluationR
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-foreground leading-relaxed">{data.summary}</p>
+          <p className="text-foreground leading-relaxed">{summary}</p>
         </CardContent>
       </Card>
 
@@ -326,8 +353,8 @@ function CandidateEvaluationResults({ data, candidateName }: { data: EvaluationR
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {data.strengths.length > 0 ? (
-                data.strengths.map((strength, index) => (
+              {strengths.length > 0 ? (
+                strengths.map((strength, index) => (
                   <Badge key={index} variant="secondary" className="bg-success/10 text-success border-success/20">
                     {strength}
                   </Badge>
@@ -348,8 +375,8 @@ function CandidateEvaluationResults({ data, candidateName }: { data: EvaluationR
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {data.red_flags.length > 0 ? (
-                data.red_flags.map((flag, index) => (
+              {redFlags.length > 0 ? (
+                redFlags.map((flag, index) => (
                   <Badge key={index} variant="secondary" className="bg-danger/10 text-danger border-danger/20">
                     {flag}
                   </Badge>
@@ -363,7 +390,7 @@ function CandidateEvaluationResults({ data, candidateName }: { data: EvaluationR
       </div>
 
       {/* GitHub Analysis if available */}
-      {data.github_analysis && (
+      {data?.github_analysis && (
         <div className="pt-8 border-t border-border">
           <h3 className="text-2xl font-bold text-foreground mb-6">GitHub Deep Analysis</h3>
           <GitHubResults data={data.github_analysis} />
