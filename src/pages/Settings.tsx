@@ -12,10 +12,12 @@ export default function Settings() {
   const [supabaseUrlOpen, setSupabaseUrlOpen] = useState(false);
   const [supabaseKeyOpen, setSupabaseKeyOpen] = useState(false);
   const [githubTokenOpen, setGithubTokenOpen] = useState(false);
+  const [openaiKeyOpen, setOpenaiKeyOpen] = useState(false);
   
   const [supabaseUrl, setSupabaseUrl] = useState("");
   const [supabaseKey, setSupabaseKey] = useState("");
   const [githubToken, setGithubToken] = useState("");
+  const [openaiKey, setOpenaiKey] = useState("");
 
   const handleSupabaseUrlSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +48,16 @@ export default function Settings() {
     });
     setGithubTokenOpen(false);
   };
+
+  const handleOpenaiKeySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log({ openaiKey });
+    toast({
+      title: "OpenAI API Key Saved",
+      description: "Your OpenAI API Key has been updated.",
+    });
+    setOpenaiKeyOpen(false);
+  };
   return (
     <MainLayout>
       <div className="space-y-8 max-w-2xl">
@@ -68,19 +80,43 @@ export default function Settings() {
               Manage authentication keys for external services
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="openai-key">OpenAI API Key (Optional)</Label>
-              <Input
-                id="openai-key"
-                type="password"
-                placeholder="sk-..."
-              />
-              <p className="text-xs text-muted-foreground">
-                Used for enhanced AI analysis features
-              </p>
-            </div>
-            <Button variant="accent">Update Keys</Button>
+          <CardContent className="space-y-3">
+            {/* OpenAI API Key Dialog */}
+            <Dialog open={openaiKeyOpen} onOpenChange={setOpenaiKeyOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  Configure OpenAI API Key
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>OpenAI API Key</DialogTitle>
+                  <DialogDescription>
+                    Enter your OpenAI API key for enhanced AI analysis features.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleOpenaiKeySubmit} className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="openai-key">OpenAI API Key (Optional)</Label>
+                    <Input
+                      id="openai-key"
+                      type="password"
+                      placeholder="sk-..."
+                      value={openaiKey}
+                      onChange={(e) => setOpenaiKey(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3 pt-4">
+                    <Button type="button" variant="outline" onClick={() => setOpenaiKeyOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" variant="accent">
+                      Save
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
 
