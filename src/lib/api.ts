@@ -1,7 +1,7 @@
 const PROXY_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api-proxy`;
 
 export interface Candidate {
-  id: number;
+  id: number | string;
   name: string;
   email: string;
   linkedin_url?: string;
@@ -13,7 +13,7 @@ export interface Candidate {
 export interface Job {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   requirements?: string;
 }
 
@@ -32,8 +32,52 @@ export interface GitHubRepo {
 }
 
 export interface GitHubAnalysis {
-  profile: GitHubProfile;
-  repos: GitHubRepo[];
+  profile?: GitHubProfile;
+  repos?: GitHubRepo[];
+  username?: string;
+  originality_check?: {
+    score: number;
+    status: string;
+    details: string;
+  };
+  commit_pattern_authenticity?: {
+    score: number;
+    status: string;
+    details: string;
+  };
+  code_quality?: {
+    score: number;
+    rating: string;
+    details: string;
+  };
+  tech_stack_verification?: {
+    match_score: number;
+    verified_skills: string[];
+    claimed_vs_actual: string;
+  };
+  project_depth?: {
+    score: number;
+    level: string;
+    details: string;
+  };
+  ai_generated_code_check?: {
+    ai_probability: number;
+    status: string;
+    details: string;
+  };
+  activity_timeline_consistency?: {
+    consistency_score: number;
+    details: string;
+  };
+  repo_health_score?: {
+    score: number;
+    details: string;
+  };
+  skill_validation?: {
+    derived_skills: string[];
+    proficiency: string;
+  };
+  overall_risk_score?: number;
 }
 
 export interface EvaluationResult {
@@ -103,10 +147,10 @@ export async function createJob(job: Omit<Job, 'id'>): Promise<{ message: string
 }
 
 // Analysis API
-export async function evaluateCandidate(candidateId: number, jobId?: string): Promise<EvaluationResult> {
-  const response = await proxyFetch('/api/analysis/evaluate/', {
+export async function evaluateCandidate(candidateId: number | string, jobId?: string): Promise<EvaluationResult> {
+  const response = await proxyFetch(`/api/analysis/evaluate/${candidateId}`, {
     method: 'POST',
-    body: JSON.stringify({ candidate_id: candidateId, job_id: jobId }),
+    body: JSON.stringify({ job_id: jobId }),
   });
   if (!response.ok) {
     throw new Error('Failed to evaluate candidate');
@@ -115,7 +159,7 @@ export async function evaluateCandidate(candidateId: number, jobId?: string): Pr
 }
 
 export async function compareCandidates(candidateIds: string[]): Promise<{ candidate_id: string; name: string; overall_score: number }[]> {
-  const response = await proxyFetch('/api/analysis/compare/', {
+  const response = await proxyFetch('/api/analysis/compare', {
     method: 'POST',
     body: JSON.stringify({ candidate_ids: candidateIds }),
   });
@@ -127,7 +171,7 @@ export async function compareCandidates(candidateIds: string[]): Promise<{ candi
 
 // GitHub Deep Check
 export async function githubDeepCheck(githubUrl: string): Promise<GitHubAnalysis> {
-  const response = await proxyFetch('/api/analysis/github-check/', {
+  const response = await proxyFetch('/api/analysis/github-deep-check', {
     method: 'POST',
     body: JSON.stringify({ github_url: githubUrl }),
   });
