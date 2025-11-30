@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CandidateCard } from "@/components/CandidateCard";
+import { CandidateDetailsDialog } from "@/components/CandidateDetailsDialog";
 import { JobCard } from "@/components/JobCard";
 import { EvaluationResults } from "@/components/EvaluationResults";
 import { getCandidates, getJobs, createCandidate, evaluateCandidate, Candidate, Job, EvaluationResult } from "@/lib/api";
@@ -18,6 +19,7 @@ export default function Candidates() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEvaluateDialogOpen, setIsEvaluateDialogOpen] = useState(false);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [evaluationResult, setEvaluationResult] = useState<EvaluationResult | null>(null);
@@ -82,6 +84,18 @@ export default function Candidates() {
     setSelectedJob(null);
     setEvaluationResult(null);
     setIsEvaluateDialogOpen(true);
+  };
+
+  const openDetailsDialog = (candidate: Candidate) => {
+    setSelectedCandidate(candidate);
+    setIsDetailsDialogOpen(true);
+  };
+
+  const handleEvaluateFromDetails = () => {
+    setIsDetailsDialogOpen(false);
+    if (selectedCandidate) {
+      openEvaluateDialog(selectedCandidate);
+    }
   };
 
   return (
@@ -173,6 +187,7 @@ export default function Candidates() {
                 <CandidateCard
                   candidate={candidate}
                   onEvaluate={() => openEvaluateDialog(candidate)}
+                  onSelect={() => openDetailsDialog(candidate)}
                 />
               </div>
             ))}
@@ -247,6 +262,14 @@ export default function Candidates() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Candidate Details Dialog */}
+        <CandidateDetailsDialog
+          candidate={selectedCandidate}
+          open={isDetailsDialogOpen}
+          onOpenChange={setIsDetailsDialogOpen}
+          onEvaluate={handleEvaluateFromDetails}
+        />
       </div>
     </MainLayout>
   );

@@ -7,6 +7,7 @@ export interface Candidate {
   linkedin_url?: string;
   github_url?: string;
   resume_text?: string;
+  resume_url?: string;
 }
 
 export interface Job {
