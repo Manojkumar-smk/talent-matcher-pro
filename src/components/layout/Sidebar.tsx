@@ -16,7 +16,7 @@ import { Button } from "../ui/button";
 import logo from "@/assets/logo.png";
 
 const navItems = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/candidates", icon: Users, label: "Candidates" },
   { to: "/candidate-evaluation", icon: UserSearch, label: "Candidate Evaluation" },
   { to: "/jobs", icon: Briefcase, label: "Jobs" },
@@ -41,7 +41,7 @@ export function Sidebar() {
         title: "Success",
         description: "Logged out successfully",
       });
-      navigate("/auth");
+      navigate("/");
     }
   };
 
