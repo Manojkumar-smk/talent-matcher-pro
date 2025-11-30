@@ -11,6 +11,7 @@ import Compare from "./pages/Compare";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import CandidateEvaluation from "./pages/CandidateEvaluation";
+import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/candidate-evaluation" element={<ProtectedRoute><CandidateEvaluation /></ProtectedRoute>} />
           <Route path="/jobs" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
           <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
+          <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
