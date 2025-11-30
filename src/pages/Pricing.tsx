@@ -82,7 +82,7 @@ export default function Pricing() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           {plans.map((plan) => {
             const Icon = plan.icon;
             const isPromo = plan.hasPromo && 'promoPrice' in plan;
