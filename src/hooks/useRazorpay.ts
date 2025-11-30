@@ -39,7 +39,7 @@ export const useRazorpay = () => {
   const initiatePayment = async ({
     amount,
     currency = "INR",
-    name = "Talent Matcher Pro",
+    name = "TalentFitPro",
     description = "Payment for services",
     onSuccess,
     onFailure,

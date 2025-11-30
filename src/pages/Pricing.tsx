@@ -213,8 +213,8 @@ export default function Pricing() {
           <CardContent>
             <p className="text-muted-foreground">
               Email us at{" "}
-              <a href="mailto:support@talentmatcher.pro" className="text-accent hover:underline">
-                support@talentmatcher.pro
+              <a href="mailto:support@talentfitpro.in" className="text-accent hover:underline">
+                support@talentfitpro.in
               </a>
             </p>
           </CardContent>
