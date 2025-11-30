@@ -7,7 +7,8 @@ import {
   GitCompare, 
   Settings,
   Sparkles,
-  LogOut
+  LogOut,
+  Github
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +17,7 @@ import { Button } from "../ui/button";
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/candidates", icon: Users, label: "Candidates" },
+  { to: "/candidate-evaluation", icon: Github, label: "GitHub Analysis" },
   { to: "/jobs", icon: Briefcase, label: "Jobs" },
   { to: "/compare", icon: GitCompare, label: "Compare" },
 ];
