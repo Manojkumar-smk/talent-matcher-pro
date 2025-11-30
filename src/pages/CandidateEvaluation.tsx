@@ -467,13 +467,20 @@ export default function CandidateEvaluation() {
 
   const selectedCandidateData = candidates.find(c => c.id.toString() === selectedCandidate);
 
-  // Auto-evaluate when URL params are present
+  // Auto-evaluate and GitHub deep check when URL params are present
   useEffect(() => {
     if (urlCandidateId && urlJobId && candidates.length > 0 && jobs.length > 0 && !evaluationData) {
+      // Trigger candidate evaluation
       evaluateCandidateMutation({ 
         candidateId: parseInt(urlCandidateId), 
         jobId: urlJobId 
       });
+
+      // Also trigger GitHub deep check if candidate has GitHub URL
+      const candidate = candidates.find(c => c.id.toString() === urlCandidateId);
+      if (candidate?.github_url && !githubData) {
+        analyzeGithub(candidate.github_url);
+      }
     }
   }, [urlCandidateId, urlJobId, candidates, jobs]);
 
