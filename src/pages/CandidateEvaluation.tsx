@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -346,10 +347,14 @@ function CandidateEvaluationResults({ data, candidateName }: { data: EvaluationR
 }
 
 export default function CandidateEvaluation() {
+  const [searchParams] = useSearchParams();
+  const urlCandidateId = searchParams.get("candidateId");
+  const urlJobId = searchParams.get("jobId");
+  
   const [activeTab, setActiveTab] = useState("candidate");
   const [githubUrl, setGithubUrl] = useState("");
-  const [selectedCandidate, setSelectedCandidate] = useState<string>("");
-  const [selectedJob, setSelectedJob] = useState<string>("");
+  const [selectedCandidate, setSelectedCandidate] = useState<string>(urlCandidateId || "");
+  const [selectedJob, setSelectedJob] = useState<string>(urlJobId || "");
   const { toast } = useToast();
 
   // Fetch candidates and jobs
@@ -459,6 +464,16 @@ export default function CandidateEvaluation() {
   };
 
   const selectedCandidateData = candidates.find(c => c.id.toString() === selectedCandidate);
+
+  // Auto-evaluate when URL params are present
+  useEffect(() => {
+    if (urlCandidateId && urlJobId && candidates.length > 0 && jobs.length > 0 && !evaluationData) {
+      evaluateCandidateMutation({ 
+        candidateId: parseInt(urlCandidateId), 
+        jobId: urlJobId 
+      });
+    }
+  }, [urlCandidateId, urlJobId, candidates, jobs]);
 
   return (
     <MainLayout>
