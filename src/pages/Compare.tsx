@@ -5,14 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CandidateCard } from "@/components/CandidateCard";
 import { ScoreCircle } from "@/components/ScoreCircle";
-import { getCandidates, compareCandidates, Candidate, EvaluationResult } from "@/lib/api";
-import { GitCompare, Loader2, Users, CheckCircle2, AlertTriangle } from "lucide-react";
+import { getCandidates, compareCandidates, Candidate } from "@/lib/api";
+import { GitCompare, Loader2, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 
+interface ComparisonResult {
+  candidate_id: string;
+  name: string;
+  overall_score: number;
+}
+
 export default function Compare() {
   const [selectedCandidates, setSelectedCandidates] = useState<Candidate[]>([]);
-  const [comparisonResults, setComparisonResults] = useState<EvaluationResult[] | null>(null);
+  const [comparisonResults, setComparisonResults] = useState<ComparisonResult[] | null>(null);
 
   const { data: candidates = [], isLoading } = useQuery({
     queryKey: ["candidates"],
@@ -50,7 +56,7 @@ export default function Compare() {
       toast({ title: "Select more candidates", description: "Please select at least 2 candidates to compare" });
       return;
     }
-    compareMutation.mutate(selectedCandidates.map((c) => c.id));
+    compareMutation.mutate(selectedCandidates.map((c) => String(c.id)));
   };
 
   const clearSelection = () => {
@@ -122,51 +128,25 @@ export default function Compare() {
           <div className="space-y-6 animate-fade-in">
             <h2 className="text-xl font-semibold text-foreground">Results</h2>
             <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-              {comparisonResults.map((result, index) => {
-                const candidate = selectedCandidates[index];
-                return (
-                  <Card key={index} variant="default" className="animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+              {comparisonResults
+                .sort((a, b) => b.overall_score - a.overall_score)
+                .map((result, index) => (
+                  <Card key={result.candidate_id} variant="default" className="animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-3">
                         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
                           {index + 1}
                         </span>
-                        {candidate?.name || `Candidate ${index + 1}`}
+                        {result.name}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div className="flex justify-center">
                         <ScoreCircle score={result.overall_score} size="lg" label="Overall Score" />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <ScoreCircle score={result.authenticity_score} size="sm" label="Authenticity" />
-                        <ScoreCircle score={result.skill_match_score} size="sm" label="Skill Match" />
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-3">{result.summary}</p>
-                      <div className="space-y-3">
-                        <div className="flex flex-wrap gap-1.5">
-                          {result.strengths.slice(0, 3).map((s, i) => (
-                            <Badge key={i} variant="secondary" className="text-xs bg-success/10 text-success">
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                              {s}
-                            </Badge>
-                          ))}
-                        </div>
-                        {result.red_flags.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5">
-                            {result.red_flags.slice(0, 2).map((f, i) => (
-                              <Badge key={i} variant="secondary" className="text-xs bg-danger/10 text-danger">
-                                <AlertTriangle className="h-3 w-3 mr-1" />
-                                {f}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
-                      </div>
                     </CardContent>
                   </Card>
-                );
-              })}
+                ))}
             </div>
           </div>
         )}
