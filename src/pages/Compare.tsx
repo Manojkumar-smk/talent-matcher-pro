@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ interface ComparisonResult {
 }
 
 export default function Compare() {
+  const [searchParams] = useSearchParams();
+  const jobId = searchParams.get("jobId");
   const [selectedCandidates, setSelectedCandidates] = useState<Candidate[]>([]);
   const [comparisonResults, setComparisonResults] = useState<ComparisonResult[] | null>(null);
 
@@ -63,6 +66,21 @@ export default function Compare() {
     setSelectedCandidates([]);
     setComparisonResults(null);
   };
+
+  // Auto-select top 10 candidates when jobId is present
+  useEffect(() => {
+    if (jobId && candidates.length > 0 && selectedCandidates.length === 0) {
+      // Take top 10 candidates
+      const topCandidates = candidates.slice(0, 10);
+      
+      setSelectedCandidates(topCandidates);
+      
+      // Automatically trigger comparison
+      if (topCandidates.length >= 2) {
+        compareMutation.mutate(topCandidates.map((c) => String(c.id)));
+      }
+    }
+  }, [jobId, candidates]);
 
   return (
     <MainLayout>
