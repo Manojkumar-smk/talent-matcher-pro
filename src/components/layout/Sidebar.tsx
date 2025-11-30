@@ -6,7 +6,6 @@ import {
   Briefcase, 
   GitCompare, 
   Settings,
-  Sparkles,
   LogOut,
   UserSearch,
   CreditCard
@@ -14,6 +13,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "../ui/button";
+import logo from "@/assets/logo.png";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -50,10 +50,8 @@ export function Sidebar() {
       <div className="flex h-full flex-col">
         {/* Logo */}
         <div className="flex h-16 items-center gap-3 px-6 border-b border-sidebar-border">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary">
-            <Sparkles className="h-5 w-5 text-sidebar-primary-foreground" />
-          </div>
-          <span className="text-lg font-bold text-sidebar-foreground">TalentAI</span>
+          <img src={logo} alt="TalentFitPro Logo" className="h-10 w-10 rounded-lg" />
+          <span className="text-lg font-bold text-sidebar-foreground">TalentFitPro</span>
         </div>
 
         {/* Navigation */}
