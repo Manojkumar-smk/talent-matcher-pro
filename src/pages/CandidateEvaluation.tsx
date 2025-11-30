@@ -626,6 +626,11 @@ export default function CandidateEvaluation() {
 
   const selectedCandidateData = candidates.find(c => c.id.toString() === selectedCandidate);
 
+  // Reset evaluation when candidate or job selection changes
+  useEffect(() => {
+    resetEvaluation();
+  }, [selectedCandidate, selectedJob]);
+
   // Auto-populate GitHub URL when candidate is selected
   useEffect(() => {
     if (selectedCandidateData?.github_url) {
@@ -635,7 +640,7 @@ export default function CandidateEvaluation() {
 
   // Auto-evaluate and GitHub deep check when URL params are present
   useEffect(() => {
-    if (urlCandidateId && urlJobId && candidates.length > 0 && jobs.length > 0 && !evaluationData) {
+    if (urlCandidateId && urlJobId && candidates.length > 0 && jobs.length > 0) {
       // Trigger candidate evaluation
       evaluateCandidateMutation({ 
         candidateId: parseInt(urlCandidateId), 
@@ -644,12 +649,12 @@ export default function CandidateEvaluation() {
 
       // Also trigger GitHub deep check if candidate has GitHub URL
       const candidate = candidates.find(c => c.id.toString() === urlCandidateId);
-      if (candidate?.github_url && !githubData) {
+      if (candidate?.github_url) {
         setGithubUrl(candidate.github_url);
         analyzeGithub(candidate.github_url);
       }
     }
-  }, [urlCandidateId, urlJobId, candidates, jobs]);
+  }, [urlCandidateId, urlJobId, candidates.length, jobs.length]);
 
   return (
     <MainLayout>
