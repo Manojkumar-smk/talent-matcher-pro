@@ -25,6 +25,7 @@ export default function Compare() {
   const [selectedCandidates, setSelectedCandidates] = useState<Candidate[]>([]);
   const [comparisonResults, setComparisonResults] = useState<ComparisonResult[] | null>(null);
   const [topN, setTopN] = useState<string>("10");
+  const [showOnlySelected, setShowOnlySelected] = useState(false);
 
   const { data: candidates = [], isLoading } = useQuery({
     queryKey: ["candidates"],
@@ -39,9 +40,15 @@ export default function Compare() {
       const restored = candidates.filter((c) => ids.includes(String(c.id)));
       if (restored.length > 0) {
         setSelectedCandidates(restored);
+        setShowOnlySelected(true); // Auto-filter to show only selected
       }
     }
   }, [candidates, searchParams]);
+
+  // Filter candidates based on selection
+  const displayedCandidates = showOnlySelected 
+    ? candidates.filter(c => selectedCandidates.some(sc => sc.id === c.id))
+    : candidates;
 
   const compareMutation = useMutation({
     mutationFn: compareCandidates,
@@ -281,14 +288,25 @@ export default function Compare() {
         {/* Candidates Selection Grid */}
         {!comparisonResults && (
           <>
-            <h2 className="text-xl font-semibold text-foreground">Select Candidates to Compare</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-foreground">Select Candidates to Compare</h2>
+              {selectedCandidates.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowOnlySelected(!showOnlySelected)}
+                >
+                  {showOnlySelected ? "Show All Candidates" : "Show Only Selected"}
+                </Button>
+              )}
+            </div>
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-accent" />
               </div>
-            ) : candidates.length > 0 ? (
+            ) : displayedCandidates.length > 0 ? (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {candidates.map((candidate, index) => (
+                {displayedCandidates.map((candidate, index) => (
                   <div key={candidate.id} style={{ animationDelay: `${index * 50}ms` }}>
                     <CandidateCard
                       candidate={candidate}
@@ -298,6 +316,20 @@ export default function Compare() {
                   </div>
                 ))}
               </div>
+            ) : showOnlySelected ? (
+              <Card className="py-12">
+                <CardContent className="text-center">
+                  <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <p className="text-muted-foreground">No candidates selected</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => setShowOnlySelected(false)}
+                  >
+                    Show All Candidates
+                  </Button>
+                </CardContent>
+              </Card>
             ) : (
               <Card className="py-12">
                 <CardContent className="text-center">
