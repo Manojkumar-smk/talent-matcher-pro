@@ -8,7 +8,8 @@ import {
   Settings,
   Sparkles,
   LogOut,
-  Github
+  Github,
+  CreditCard
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +21,7 @@ const navItems = [
   { to: "/candidate-evaluation", icon: Github, label: "GitHub Analysis" },
   { to: "/jobs", icon: Briefcase, label: "Jobs" },
   { to: "/compare", icon: GitCompare, label: "Compare" },
+  { to: "/pricing", icon: CreditCard, label: "Pricing" },
 ];
 
 export function Sidebar() {
