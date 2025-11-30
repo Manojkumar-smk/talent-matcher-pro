@@ -1,7 +1,8 @@
-import Dashboard from "./Dashboard";
+import { Navigate } from "react-router-dom";
 
+// Redirect to landing page
 const Index = () => {
-  return <Dashboard />;
+  return <Navigate to="/" replace />;
 };
 
 export default Index;

@@ -1,9 +1,10 @@
-import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { RazorpayButton } from "@/components/RazorpayButton";
-import { CheckCircle, Sparkles, Zap, Crown, Percent, Clock } from "lucide-react";
+import { CheckCircle, Sparkles, Zap, Crown, Percent, Clock, ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Link } from "react-router-dom";
 
 export default function Pricing() {
   const promotionalPlan = {
@@ -73,8 +74,21 @@ export default function Pricing() {
   );
 
   return (
-    <MainLayout>
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+          <Link to="/auth">
+            <Button variant="outline">Sign In</Button>
+          </Link>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-6 py-12 max-w-7xl space-y-8">
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold text-foreground">Choose Your Plan</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -220,6 +234,6 @@ export default function Pricing() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </div>
   );
 }
