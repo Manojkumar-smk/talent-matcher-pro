@@ -9,7 +9,6 @@ import { ScoreCircle } from "@/components/ScoreCircle";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { usePdfExport } from "@/hooks/use-pdf-export";
 import { githubDeepCheck, type GitHubAnalysis } from "@/lib/api";
 import { 
   CheckCircle, 
@@ -22,9 +21,7 @@ import {
   Shield,
   TrendingUp,
   Search,
-  Github,
-  Download,
-  Loader2
+  Github
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -64,12 +61,11 @@ function LoadingSkeleton() {
   );
 }
 
-function EvaluationResults({ data, onExport, isExporting }: { data: GitHubAnalysis; onExport: () => void; isExporting: boolean }) {
+function EvaluationResults({ data }: { data: GitHubAnalysis }) {
   const riskLevel = getRiskLevel(data.overall_risk_score);
 
   return (
-    <div id="evaluation-results" className="space-y-8 animate-fade-in bg-background">
-      {/* Header Section */}
+    <div className="space-y-8 animate-fade-in">
       <div className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
@@ -79,37 +75,20 @@ function EvaluationResults({ data, onExport, isExporting }: { data: GitHubAnalys
               GitHub Profile: @{data.username}
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <Button onClick={onExport} disabled={isExporting} variant="outline">
-              {isExporting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Exporting...
-                </>
-              ) : (
-                <>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export PDF
-                </>
-              )}
-            </Button>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground mb-2">Overall Risk Score</p>
-              <div className="flex items-center gap-3">
-                <ScoreCircle score={100 - data.overall_risk_score} size="lg" />
-                <div>
-                  <p className={cn("text-2xl font-bold", riskLevel.color)}>{riskLevel.label}</p>
-                  <p className="text-sm text-muted-foreground">Score: {data.overall_risk_score}/100</p>
-                </div>
+          <div className="text-right">
+            <p className="text-sm text-muted-foreground mb-2">Overall Risk Score</p>
+            <div className="flex items-center gap-3">
+              <ScoreCircle score={100 - data.overall_risk_score} size="lg" />
+              <div>
+                <p className={cn("text-2xl font-bold", riskLevel.color)}>{riskLevel.label}</p>
+                <p className="text-sm text-muted-foreground">Score: {data.overall_risk_score}/100</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Key Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Originality Check */}
         <Card variant="elevated" className="animate-slide-up">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -126,7 +105,6 @@ function EvaluationResults({ data, onExport, isExporting }: { data: GitHubAnalys
           </CardContent>
         </Card>
 
-        {/* Commit Pattern */}
         <Card variant="elevated" className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -143,7 +121,6 @@ function EvaluationResults({ data, onExport, isExporting }: { data: GitHubAnalys
           </CardContent>
         </Card>
 
-        {/* Code Quality */}
         <Card variant="elevated" className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -163,9 +140,7 @@ function EvaluationResults({ data, onExport, isExporting }: { data: GitHubAnalys
         </Card>
       </div>
 
-      {/* Secondary Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Tech Stack Verification */}
         <Card variant="accent" className="animate-fade-in">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -187,7 +162,6 @@ function EvaluationResults({ data, onExport, isExporting }: { data: GitHubAnalys
           </CardContent>
         </Card>
 
-        {/* Project Depth */}
         <Card variant="accent" className="animate-fade-in">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -207,9 +181,7 @@ function EvaluationResults({ data, onExport, isExporting }: { data: GitHubAnalys
         </Card>
       </div>
 
-      {/* Additional Insights */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* AI Generated Code */}
         <Card variant="interactive" className="animate-fade-in">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -229,7 +201,6 @@ function EvaluationResults({ data, onExport, isExporting }: { data: GitHubAnalys
           </CardContent>
         </Card>
 
-        {/* Activity Timeline */}
         <Card variant="interactive" className="animate-fade-in">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -243,7 +214,6 @@ function EvaluationResults({ data, onExport, isExporting }: { data: GitHubAnalys
           </CardContent>
         </Card>
 
-        {/* Repo Health */}
         <Card variant="interactive" className="animate-fade-in">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -258,7 +228,6 @@ function EvaluationResults({ data, onExport, isExporting }: { data: GitHubAnalys
         </Card>
       </div>
 
-      {/* Skill Validation */}
       <Card variant="elevated" className="animate-fade-in">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -284,7 +253,6 @@ function EvaluationResults({ data, onExport, isExporting }: { data: GitHubAnalys
 export default function CandidateEvaluation() {
   const [githubUrl, setGithubUrl] = useState("");
   const { toast } = useToast();
-  const { exportToPdf, isExporting } = usePdfExport();
 
   const { mutate: analyze, data, isPending, reset } = useMutation({
     mutationFn: githubDeepCheck,
@@ -315,16 +283,9 @@ export default function CandidateEvaluation() {
     reset();
   };
 
-  const handleExport = () => {
-    if (data) {
-      exportToPdf(data, "evaluation-results");
-    }
-  };
-
   return (
     <MainLayout>
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Search Form */}
         <Card variant="elevated" className="animate-fade-in">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -367,13 +328,10 @@ export default function CandidateEvaluation() {
           </CardContent>
         </Card>
 
-        {/* Loading State */}
         {isPending && <LoadingSkeleton />}
 
-        {/* Results */}
-        {data && !isPending && <EvaluationResults data={data} onExport={handleExport} isExporting={isExporting} />}
+        {data && !isPending && <EvaluationResults data={data} />}
 
-        {/* Empty State */}
         {!data && !isPending && (
           <div className="text-center py-16 animate-fade-in">
             <Github className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
