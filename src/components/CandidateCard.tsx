@@ -31,7 +31,7 @@ export function CandidateCard({
     <Card 
       variant="interactive" 
       className={cn(
-        "animate-slide-up",
+        "animate-slide-up cursor-pointer hover:shadow-lg transition-shadow",
         selected && "ring-2 ring-accent border-accent",
         className
       )}
