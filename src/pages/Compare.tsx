@@ -67,20 +67,7 @@ export default function Compare() {
     setComparisonResults(null);
   };
 
-  // Auto-select top 10 candidates when jobId is present
-  useEffect(() => {
-    if (jobId && candidates.length > 0 && selectedCandidates.length === 0) {
-      // Take top 10 candidates
-      const topCandidates = candidates.slice(0, 10);
-      
-      setSelectedCandidates(topCandidates);
-      
-      // Automatically trigger comparison
-      if (topCandidates.length >= 2) {
-        compareMutation.mutate(topCandidates.map((c) => String(c.id)));
-      }
-    }
-  }, [jobId, candidates]);
+  // Removed auto-selection logic to allow manual candidate selection
 
   return (
     <MainLayout>
