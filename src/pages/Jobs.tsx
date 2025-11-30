@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,12 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { getJobs, createJob, Job } from "@/lib/api";
-import { Plus, Briefcase, Loader2 } from "lucide-react";
+import { Plus, Briefcase, Loader2, Users } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 
 export default function Jobs() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
@@ -137,8 +139,20 @@ export default function Jobs() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <p className="text-muted-foreground line-clamp-3">{job.description}</p>
+                  <Button 
+                    variant="accent" 
+                    size="sm" 
+                    className="w-full gap-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/compare?jobId=${job.id}`);
+                    }}
+                  >
+                    <Users className="h-4 w-4" />
+                    List Candidates
+                  </Button>
                 </CardContent>
               </Card>
             ))}
