@@ -5,24 +5,46 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Server, Key, Database } from "lucide-react";
+import { Key, Database } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function Settings() {
-  const [open, setOpen] = useState(false);
+  const [supabaseUrlOpen, setSupabaseUrlOpen] = useState(false);
+  const [supabaseKeyOpen, setSupabaseKeyOpen] = useState(false);
+  const [githubTokenOpen, setGithubTokenOpen] = useState(false);
+  
   const [supabaseUrl, setSupabaseUrl] = useState("");
   const [supabaseKey, setSupabaseKey] = useState("");
   const [githubToken, setGithubToken] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSupabaseUrlSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle the form submission here
-    console.log({ supabaseUrl, supabaseKey, githubToken });
+    console.log({ supabaseUrl });
     toast({
-      title: "Configuration Saved",
-      description: "Your integration settings have been updated.",
+      title: "Supabase URL Saved",
+      description: "Your Supabase URL has been updated.",
     });
-    setOpen(false);
+    setSupabaseUrlOpen(false);
+  };
+
+  const handleSupabaseKeySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log({ supabaseKey });
+    toast({
+      title: "Supabase Key Saved",
+      description: "Your Supabase Key has been updated.",
+    });
+    setSupabaseKeyOpen(false);
+  };
+
+  const handleGithubTokenSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log({ githubToken });
+    toast({
+      title: "GitHub Token Saved",
+      description: "Your GitHub Token has been updated.",
+    });
+    setGithubTokenOpen(false);
   };
   return (
     <MainLayout>
@@ -34,33 +56,6 @@ export default function Settings() {
             Configure your TalentAI dashboard
           </p>
         </div>
-
-        {/* API Configuration */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Server className="h-5 w-5 text-accent" />
-              API Configuration
-            </CardTitle>
-            <CardDescription>
-              Configure the connection to your backend API
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="api-url">API Base URL</Label>
-              <Input
-                id="api-url"
-                defaultValue="http://127.0.0.1:5000"
-                placeholder="http://localhost:5000"
-              />
-              <p className="text-xs text-muted-foreground">
-                The base URL for your Flask backend API
-              </p>
-            </div>
-            <Button variant="accent">Save Changes</Button>
-          </CardContent>
-        </Card>
 
         {/* API Keys */}
         <Card>
@@ -100,19 +95,22 @@ export default function Settings() {
               Configure external service integrations
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Dialog open={open} onOpenChange={setOpen}>
+          <CardContent className="space-y-3">
+            {/* Supabase URL Dialog */}
+            <Dialog open={supabaseUrlOpen} onOpenChange={setSupabaseUrlOpen}>
               <DialogTrigger asChild>
-                <Button variant="accent">Configure Integrations</Button>
+                <Button variant="outline" className="w-full justify-start">
+                  Configure Supabase URL
+                </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
-                  <DialogTitle>Integration Configuration</DialogTitle>
+                  <DialogTitle>Supabase URL</DialogTitle>
                   <DialogDescription>
-                    Enter your service credentials to enable integrations.
+                    Enter your Supabase project URL.
                   </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+                <form onSubmit={handleSupabaseUrlSubmit} className="space-y-4 mt-4">
                   <div className="space-y-2">
                     <Label htmlFor="supabase-url">Supabase URL</Label>
                     <Input
@@ -124,6 +122,33 @@ export default function Settings() {
                       required
                     />
                   </div>
+                  <div className="flex justify-end gap-3 pt-4">
+                    <Button type="button" variant="outline" onClick={() => setSupabaseUrlOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" variant="accent">
+                      Save
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            {/* Supabase Key Dialog */}
+            <Dialog open={supabaseKeyOpen} onOpenChange={setSupabaseKeyOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  Configure Supabase Key
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Supabase Key</DialogTitle>
+                  <DialogDescription>
+                    Enter your Supabase anon/public key.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSupabaseKeySubmit} className="space-y-4 mt-4">
                   <div className="space-y-2">
                     <Label htmlFor="supabase-key">Supabase Key</Label>
                     <Input
@@ -135,6 +160,33 @@ export default function Settings() {
                       required
                     />
                   </div>
+                  <div className="flex justify-end gap-3 pt-4">
+                    <Button type="button" variant="outline" onClick={() => setSupabaseKeyOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" variant="accent">
+                      Save
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            {/* GitHub Token Dialog */}
+            <Dialog open={githubTokenOpen} onOpenChange={setGithubTokenOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  Configure GitHub Token
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>GitHub Token</DialogTitle>
+                  <DialogDescription>
+                    Enter your GitHub personal access token.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleGithubTokenSubmit} className="space-y-4 mt-4">
                   <div className="space-y-2">
                     <Label htmlFor="github-token">GitHub Token</Label>
                     <Input
@@ -147,11 +199,11 @@ export default function Settings() {
                     />
                   </div>
                   <div className="flex justify-end gap-3 pt-4">
-                    <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                    <Button type="button" variant="outline" onClick={() => setGithubTokenOpen(false)}>
                       Cancel
                     </Button>
                     <Button type="submit" variant="accent">
-                      Save Configuration
+                      Save
                     </Button>
                   </div>
                 </form>
