@@ -144,12 +144,18 @@ export default function Compare() {
         {/* Comparison Results */}
         {comparisonResults && (
           <div className="space-y-6 animate-fade-in">
-            <h2 className="text-xl font-semibold text-foreground">Results</h2>
+            <h2 className="text-xl font-semibold text-foreground">Results - Click to View Evaluation</h2>
             <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
               {comparisonResults
                 .sort((a, b) => b.overall_score - a.overall_score)
                 .map((result, index) => (
-                  <Card key={result.candidate_id} variant="default" className="animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+                  <Card 
+                    key={result.candidate_id} 
+                    variant="interactive" 
+                    className="animate-slide-up cursor-pointer" 
+                    style={{ animationDelay: `${index * 100}ms` }}
+                    onClick={() => window.location.href = `/candidate-evaluation?candidateId=${result.candidate_id}&jobId=${jobId}`}
+                  >
                     <CardHeader>
                       <CardTitle className="flex items-center gap-3">
                         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
