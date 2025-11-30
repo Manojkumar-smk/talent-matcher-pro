@@ -20,7 +20,7 @@ interface ComparisonResult {
 }
 
 export default function Compare() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const jobId = searchParams.get("jobId");
   const [selectedCandidates, setSelectedCandidates] = useState<Candidate[]>([]);
   const [comparisonResults, setComparisonResults] = useState<ComparisonResult[] | null>(null);
@@ -30,6 +30,18 @@ export default function Compare() {
     queryKey: ["candidates"],
     queryFn: getCandidates,
   });
+
+  // Restore selected candidates from URL on mount
+  useEffect(() => {
+    const selectedIds = searchParams.get("selected");
+    if (selectedIds && candidates.length > 0) {
+      const ids = selectedIds.split(",");
+      const restored = candidates.filter((c) => ids.includes(String(c.id)));
+      if (restored.length > 0) {
+        setSelectedCandidates(restored);
+      }
+    }
+  }, [candidates, searchParams]);
 
   const compareMutation = useMutation({
     mutationFn: compareCandidates,
@@ -45,14 +57,29 @@ export default function Compare() {
   const toggleCandidate = (candidate: Candidate) => {
     setSelectedCandidates((prev) => {
       const isSelected = prev.find((c) => c.id === candidate.id);
+      let newSelection: Candidate[];
+      
       if (isSelected) {
-        return prev.filter((c) => c.id !== candidate.id);
+        newSelection = prev.filter((c) => c.id !== candidate.id);
+      } else {
+        if (prev.length >= 5) {
+          toast({ title: "Limit reached", description: "You can compare up to 5 candidates" });
+          return prev;
+        }
+        newSelection = [...prev, candidate];
       }
-      if (prev.length >= 5) {
-        toast({ title: "Limit reached", description: "You can compare up to 5 candidates" });
-        return prev;
+      
+      // Update URL with selected candidate IDs
+      const newParams = new URLSearchParams(searchParams);
+      if (newSelection.length > 0) {
+        newParams.set("selected", newSelection.map((c) => c.id).join(","));
+      } else {
+        newParams.delete("selected");
       }
-      return [...prev, candidate];
+      if (jobId) newParams.set("jobId", jobId);
+      setSearchParams(newParams, { replace: true });
+      
+      return newSelection;
     });
     setComparisonResults(null);
   };
@@ -68,6 +95,12 @@ export default function Compare() {
   const clearSelection = () => {
     setSelectedCandidates([]);
     setComparisonResults(null);
+    
+    // Clear selected candidates from URL
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("selected");
+    if (jobId) newParams.set("jobId", jobId);
+    setSearchParams(newParams, { replace: true });
   };
 
   const selectTopNCandidates = () => {
@@ -103,6 +136,12 @@ export default function Compare() {
     const topCandidates = candidates.slice(0, n);
     setSelectedCandidates(topCandidates);
     setComparisonResults(null);
+    
+    // Update URL with selected candidate IDs
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("selected", topCandidates.map((c) => c.id).join(","));
+    if (jobId) newParams.set("jobId", jobId);
+    setSearchParams(newParams, { replace: true });
     
     toast({ 
       title: "Candidates selected", 
