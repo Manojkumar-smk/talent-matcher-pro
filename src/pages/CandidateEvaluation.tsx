@@ -516,6 +516,7 @@ export default function CandidateEvaluation() {
   const [githubUrl, setGithubUrl] = useState("");
   const [selectedCandidate, setSelectedCandidate] = useState<string>(urlCandidateId || "");
   const [selectedJob, setSelectedJob] = useState<string>(urlJobId || "");
+  const [currentEvaluation, setCurrentEvaluation] = useState<EvaluationResult | null>(null);
   const { toast } = useToast();
 
   // Fetch candidates and jobs
@@ -560,9 +561,7 @@ export default function CandidateEvaluation() {
   // Candidate Evaluation mutation
   const { 
     mutate: evaluateCandidateMutation, 
-    data: evaluationData, 
     isPending: isEvaluationPending, 
-    reset: resetEvaluation 
   } = useMutation({
     mutationFn: ({ candidateId, jobId }: { candidateId: number; jobId: string }) => {
       console.log("Calling Evaluate API with candidateId:", candidateId, "jobId:", jobId);
@@ -570,6 +569,8 @@ export default function CandidateEvaluation() {
     },
     onSuccess: (result) => {
       console.log("Evaluation API Response:", result);
+      console.log("Setting evaluation scores - Overall:", result.overall_score, "Authenticity:", result.authenticity_score, "Skill Match:", result.skill_match_score);
+      setCurrentEvaluation(result);
       toast({
         title: "Evaluation Complete",
         description: "Candidate has been evaluated successfully",
@@ -577,6 +578,7 @@ export default function CandidateEvaluation() {
     },
     onError: (error: Error) => {
       console.error("Evaluation API Error:", error);
+      setCurrentEvaluation(null);
       toast({
         title: "Evaluation Failed",
         description: error.message,
@@ -608,14 +610,11 @@ export default function CandidateEvaluation() {
       return;
     }
     // Reset before new evaluation to ensure fresh data
-    resetEvaluation();
-    // Small delay to ensure reset is processed
-    setTimeout(() => {
-      evaluateCandidateMutation({ 
-        candidateId: parseInt(selectedCandidate), 
-        jobId: selectedJob 
-      });
-    }, 0);
+    setCurrentEvaluation(null);
+    evaluateCandidateMutation({ 
+      candidateId: parseInt(selectedCandidate), 
+      jobId: selectedJob 
+    });
   };
 
   const handleGithubReset = () => {
@@ -626,7 +625,7 @@ export default function CandidateEvaluation() {
   const handleEvaluationReset = () => {
     setSelectedCandidate("");
     setSelectedJob("");
-    resetEvaluation();
+    setCurrentEvaluation(null);
   };
 
   const selectedCandidateData = candidates.find(c => c.id.toString() === selectedCandidate);
@@ -750,7 +749,7 @@ export default function CandidateEvaluation() {
                       </>
                     )}
                   </Button>
-                  {evaluationData && (
+                  {currentEvaluation && (
                     <Button type="button" variant="outline" onClick={handleEvaluationReset}>
                       New Evaluation
                     </Button>
@@ -761,14 +760,14 @@ export default function CandidateEvaluation() {
 
             {isEvaluationPending && <LoadingSkeleton />}
 
-            {evaluationData && !isEvaluationPending && (
+            {currentEvaluation && !isEvaluationPending && (
               <CandidateEvaluationResults 
-                data={evaluationData} 
+                data={currentEvaluation} 
                 candidateName={selectedCandidateData?.name || "Candidate"} 
               />
             )}
 
-            {!evaluationData && !isEvaluationPending && (
+            {!currentEvaluation && !isEvaluationPending && (
               <div className="text-center py-16 animate-fade-in">
                 <User className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
                 <h2 className="text-2xl font-semibold text-foreground mb-2">No Evaluation Yet</h2>
