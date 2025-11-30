@@ -255,8 +255,19 @@ export default function CandidateEvaluation() {
   const { toast } = useToast();
 
   const { mutate: analyze, data, isPending, reset } = useMutation({
-    mutationFn: githubDeepCheck,
+    mutationFn: (url: string) => {
+      console.log("Calling API with URL:", url);
+      return githubDeepCheck(url);
+    },
+    onSuccess: (result) => {
+      console.log("API Response:", result);
+      toast({
+        title: "Analysis Complete",
+        description: `Successfully analyzed @${result.username}`,
+      });
+    },
     onError: (error: Error) => {
+      console.error("API Error:", error);
       toast({
         title: "Analysis Failed",
         description: error.message,
