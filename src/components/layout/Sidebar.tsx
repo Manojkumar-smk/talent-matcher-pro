@@ -8,7 +8,7 @@ import {
   Settings,
   Sparkles,
   LogOut,
-  Github,
+  UserSearch,
   CreditCard
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +18,7 @@ import { Button } from "../ui/button";
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/candidates", icon: Users, label: "Candidates" },
-  { to: "/candidate-evaluation", icon: Github, label: "GitHub Analysis" },
+  { to: "/candidate-evaluation", icon: UserSearch, label: "Candidate Evaluation" },
   { to: "/jobs", icon: Briefcase, label: "Jobs" },
   { to: "/compare", icon: GitCompare, label: "Compare" },
   { to: "/pricing", icon: CreditCard, label: "Pricing" },
