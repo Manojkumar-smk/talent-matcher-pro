@@ -9,6 +9,7 @@ import { ScoreCircle } from "@/components/ScoreCircle";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { usePdfExport } from "@/hooks/use-pdf-export";
 import { githubDeepCheck, type GitHubAnalysis } from "@/lib/api";
 import { 
   CheckCircle, 
@@ -21,7 +22,9 @@ import {
   Shield,
   TrendingUp,
   Search,
-  Github
+  Github,
+  Download,
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -61,11 +64,11 @@ function LoadingSkeleton() {
   );
 }
 
-function EvaluationResults({ data }: { data: GitHubAnalysis }) {
+function EvaluationResults({ data, onExport, isExporting }: { data: GitHubAnalysis; onExport: () => void; isExporting: boolean }) {
   const riskLevel = getRiskLevel(data.overall_risk_score);
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div id="evaluation-results" className="space-y-8 animate-fade-in bg-background">
       {/* Header Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-4">
@@ -76,13 +79,28 @@ function EvaluationResults({ data }: { data: GitHubAnalysis }) {
               GitHub Profile: @{data.username}
             </p>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground mb-2">Overall Risk Score</p>
-            <div className="flex items-center gap-3">
-              <ScoreCircle score={100 - data.overall_risk_score} size="lg" />
-              <div>
-                <p className={cn("text-2xl font-bold", riskLevel.color)}>{riskLevel.label}</p>
-                <p className="text-sm text-muted-foreground">Score: {data.overall_risk_score}/100</p>
+          <div className="flex items-center gap-4">
+            <Button onClick={onExport} disabled={isExporting} variant="outline">
+              {isExporting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export PDF
+                </>
+              )}
+            </Button>
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground mb-2">Overall Risk Score</p>
+              <div className="flex items-center gap-3">
+                <ScoreCircle score={100 - data.overall_risk_score} size="lg" />
+                <div>
+                  <p className={cn("text-2xl font-bold", riskLevel.color)}>{riskLevel.label}</p>
+                  <p className="text-sm text-muted-foreground">Score: {data.overall_risk_score}/100</p>
+                </div>
               </div>
             </div>
           </div>
@@ -266,6 +284,7 @@ function EvaluationResults({ data }: { data: GitHubAnalysis }) {
 export default function CandidateEvaluation() {
   const [githubUrl, setGithubUrl] = useState("");
   const { toast } = useToast();
+  const { exportToPdf, isExporting } = usePdfExport();
 
   const { mutate: analyze, data, isPending, reset } = useMutation({
     mutationFn: githubDeepCheck,
@@ -294,6 +313,12 @@ export default function CandidateEvaluation() {
   const handleReset = () => {
     setGithubUrl("");
     reset();
+  };
+
+  const handleExport = () => {
+    if (data) {
+      exportToPdf(data, "evaluation-results");
+    }
   };
 
   return (
@@ -346,7 +371,7 @@ export default function CandidateEvaluation() {
         {isPending && <LoadingSkeleton />}
 
         {/* Results */}
-        {data && !isPending && <EvaluationResults data={data} />}
+        {data && !isPending && <EvaluationResults data={data} onExport={handleExport} isExporting={isExporting} />}
 
         {/* Empty State */}
         {!data && !isPending && (
