@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,8 @@ import {
   User,
   Briefcase,
   FileText,
-  Sparkles
+  Sparkles,
+  ArrowLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -348,6 +349,7 @@ function CandidateEvaluationResults({ data, candidateName }: { data: EvaluationR
 
 export default function CandidateEvaluation() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const urlCandidateId = searchParams.get("candidateId");
   const urlJobId = searchParams.get("jobId");
   
@@ -478,6 +480,18 @@ export default function CandidateEvaluation() {
   return (
     <MainLayout>
       <div className="max-w-7xl mx-auto space-y-8">
+        {/* Back Button - Show when coming from Compare page */}
+        {urlJobId && (
+          <Button 
+            variant="outline" 
+            onClick={() => navigate(`/compare?jobId=${urlJobId}`)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Comparison
+          </Button>
+        )}
+        
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="candidate" className="flex items-center gap-2">
