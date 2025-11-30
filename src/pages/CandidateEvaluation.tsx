@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -607,10 +607,15 @@ export default function CandidateEvaluation() {
       });
       return;
     }
-    evaluateCandidateMutation({ 
-      candidateId: parseInt(selectedCandidate), 
-      jobId: selectedJob 
-    });
+    // Reset before new evaluation to ensure fresh data
+    resetEvaluation();
+    // Small delay to ensure reset is processed
+    setTimeout(() => {
+      evaluateCandidateMutation({ 
+        candidateId: parseInt(selectedCandidate), 
+        jobId: selectedJob 
+      });
+    }, 0);
   };
 
   const handleGithubReset = () => {
@@ -626,11 +631,6 @@ export default function CandidateEvaluation() {
 
   const selectedCandidateData = candidates.find(c => c.id.toString() === selectedCandidate);
 
-  // Reset evaluation when candidate or job selection changes
-  useEffect(() => {
-    resetEvaluation();
-  }, [selectedCandidate, selectedJob]);
-
   // Auto-populate GitHub URL when candidate is selected
   useEffect(() => {
     if (selectedCandidateData?.github_url) {
@@ -638,9 +638,14 @@ export default function CandidateEvaluation() {
     }
   }, [selectedCandidate, selectedCandidateData]);
 
-  // Auto-evaluate and GitHub deep check when URL params are present
+  // Track if auto-evaluation has run
+  const hasAutoEvaluated = useRef(false);
+
+  // Auto-evaluate and GitHub deep check when URL params are present (only once)
   useEffect(() => {
-    if (urlCandidateId && urlJobId && candidates.length > 0 && jobs.length > 0) {
+    if (urlCandidateId && urlJobId && candidates.length > 0 && jobs.length > 0 && !hasAutoEvaluated.current) {
+      hasAutoEvaluated.current = true;
+      
       // Trigger candidate evaluation
       evaluateCandidateMutation({ 
         candidateId: parseInt(urlCandidateId), 
