@@ -4,10 +4,12 @@ import { useSearchParams } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { CandidateCard } from "@/components/CandidateCard";
 import { ScoreCircle } from "@/components/ScoreCircle";
 import { getCandidates, compareCandidates, Candidate } from "@/lib/api";
-import { GitCompare, Loader2, Users } from "lucide-react";
+import { GitCompare, Loader2, Users, List } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 
@@ -22,6 +24,7 @@ export default function Compare() {
   const jobId = searchParams.get("jobId");
   const [selectedCandidates, setSelectedCandidates] = useState<Candidate[]>([]);
   const [comparisonResults, setComparisonResults] = useState<ComparisonResult[] | null>(null);
+  const [topN, setTopN] = useState<string>("10");
 
   const { data: candidates = [], isLoading } = useQuery({
     queryKey: ["candidates"],
@@ -67,7 +70,45 @@ export default function Compare() {
     setComparisonResults(null);
   };
 
-  // Removed auto-selection logic to allow manual candidate selection
+  const selectTopNCandidates = () => {
+    const n = parseInt(topN);
+    
+    if (isNaN(n) || n < 2) {
+      toast({ 
+        title: "Invalid number", 
+        description: "Please enter a number of at least 2",
+        variant: "destructive" 
+      });
+      return;
+    }
+    
+    if (n > candidates.length) {
+      toast({ 
+        title: "Not enough candidates", 
+        description: `Only ${candidates.length} candidates available`,
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    if (n > 10) {
+      toast({ 
+        title: "Too many candidates", 
+        description: "You can select up to 10 candidates at a time",
+        variant: "destructive" 
+      });
+      return;
+    }
+    
+    const topCandidates = candidates.slice(0, n);
+    setSelectedCandidates(topCandidates);
+    setComparisonResults(null);
+    
+    toast({ 
+      title: "Candidates selected", 
+      description: `Top ${n} candidates selected` 
+    });
+  };
 
   return (
     <MainLayout>
@@ -105,6 +146,42 @@ export default function Compare() {
             </Button>
           </div>
         </div>
+
+        {/* Quick Selection Tool */}
+        <Card variant="flat">
+          <CardContent className="py-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
+              <div className="flex-1 w-full sm:w-auto">
+                <Label htmlFor="topN" className="text-sm font-medium">
+                  Quick Select Top Candidates
+                </Label>
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    id="topN"
+                    type="number"
+                    min="2"
+                    max="10"
+                    value={topN}
+                    onChange={(e) => setTopN(e.target.value)}
+                    placeholder="Enter number (2-10)"
+                    className="w-32"
+                  />
+                  <Button 
+                    onClick={selectTopNCandidates}
+                    disabled={candidates.length === 0}
+                    variant="secondary"
+                  >
+                    <List className="h-4 w-4 mr-2" />
+                    Select Top {topN || "N"}
+                  </Button>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Automatically select the first N candidates from the list below
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Selection Info */}
         {selectedCandidates.length > 0 && (
