@@ -75,209 +75,154 @@ function LoadingSkeleton() {
 }
 
 function GitHubResults({ data }: { data: GitHubAnalysis }) {
-  const riskLevel = getRiskLevel(data?.overall_risk_score ?? 0);
+  const profile = data?.profile;
+  const repos = data?.repos ?? [];
 
-  // Safe accessors for nested properties
-  const originality = data?.originality_check ?? { score: 0, status: "unknown", details: "N/A" };
-  const commitAuth = data?.commit_pattern_authenticity ?? { score: 0, status: "unknown", details: "N/A" };
-  const codeQuality = data?.code_quality ?? { score: 0, rating: "N/A", details: "N/A" };
-  const techStack = data?.tech_stack_verification ?? { match_score: 0, verified_skills: [], claimed_vs_actual: "N/A" };
-  const projectDepth = data?.project_depth ?? { score: 0, level: "N/A", details: "N/A" };
-  const aiCheck = data?.ai_generated_code_check ?? { ai_probability: 0, status: "unknown", details: "N/A" };
-  const timeline = data?.activity_timeline_consistency ?? { consistency_score: 0, details: "N/A" };
-  const repoHealth = data?.repo_health_score ?? { score: 0, details: "N/A" };
-  const skillValidation = data?.skill_validation ?? { derived_skills: [], proficiency: "N/A" };
+  // Extract unique languages from repos for skills display
+  const languages = [...new Set(repos.map(r => r.language).filter(Boolean))];
 
   return (
     <div className="space-y-8 animate-fade-in">
+      {/* Profile Header */}
       <div className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-4xl font-bold text-foreground">GitHub Analysis</h1>
             <p className="text-muted-foreground mt-2 flex items-center gap-2">
               <Github className="h-4 w-4" />
-              Profile: @{data?.username ?? "Unknown"}
+              Profile: @{profile?.login ?? "Unknown"}
             </p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground mb-2">Overall Risk Score</p>
-            <div className="flex items-center gap-3">
-              <ScoreCircle score={100 - (data?.overall_risk_score ?? 0)} size="lg" />
-              <div>
-                <p className={cn("text-2xl font-bold", riskLevel.color)}>{riskLevel.label}</p>
-                <p className="text-sm text-muted-foreground">Score: {data?.overall_risk_score ?? 0}/100</p>
-              </div>
-            </div>
+            {profile?.name && (
+              <p className="text-lg text-foreground mt-1">{profile.name}</p>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Profile Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card variant="elevated" className="animate-slide-up">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <GitBranch className="h-5 w-5 text-accent" />
-                Originality
-              </CardTitle>
-              {getStatusIcon(originality.status)}
-            </div>
-            <CardDescription>{originality.details}</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5 text-accent" />
+              Profile Info
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <ScoreBar score={originality.score} label="Originality Score" />
+          <CardContent className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Username</span>
+              <span className="font-medium text-foreground">@{profile?.login ?? "N/A"}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Name</span>
+              <span className="font-medium text-foreground">{profile?.name ?? "N/A"}</span>
+            </div>
           </CardContent>
         </Card>
 
         <Card variant="elevated" className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-accent" />
-                Commit Authenticity
-              </CardTitle>
-              {getStatusIcon(commitAuth.status)}
-            </div>
-            <CardDescription>{commitAuth.details}</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <GitBranch className="h-5 w-5 text-accent" />
+              Public Repositories
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <ScoreBar score={commitAuth.score} label="Authenticity Score" />
+            <div className="text-center">
+              <span className="text-5xl font-bold text-accent">{profile?.public_repos ?? 0}</span>
+              <p className="text-muted-foreground mt-2">Total Repos</p>
+            </div>
           </CardContent>
         </Card>
 
         <Card variant="elevated" className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Code className="h-5 w-5 text-accent" />
-                Code Quality
-              </CardTitle>
-              <Badge variant={codeQuality.score >= 70 ? "default" : codeQuality.score >= 50 ? "secondary" : "destructive"}>
-                Grade {codeQuality.rating}
-              </Badge>
-            </div>
-            <CardDescription>{codeQuality.details}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ScoreBar score={codeQuality.score} label="Quality Score" />
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card variant="accent" className="animate-fade-in">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-accent" />
-              Tech Stack Verification
-            </CardTitle>
-            <CardDescription>{techStack.claimed_vs_actual}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ScoreBar score={techStack.match_score} label="Match Score" />
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">Verified Skills</p>
-              <div className="flex flex-wrap gap-2">
-                {techStack.verified_skills.length > 0 ? (
-                  techStack.verified_skills.map((skill) => (
-                    <Badge key={skill} variant="secondary">{skill}</Badge>
-                  ))
-                ) : (
-                  <p className="text-muted-foreground text-sm">No skills verified</p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card variant="accent" className="animate-fade-in">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-accent" />
-              Project Depth
-            </CardTitle>
-            <CardDescription>{projectDepth.details}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ScoreBar score={projectDepth.score} label="Depth Score" />
-            <div className="flex items-center gap-2">
-              <Badge variant="default" className="text-lg px-4 py-2">
-                {projectDepth.level}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card variant="interactive" className="animate-fade-in">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-accent" />
-              AI Code Detection
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Status</span>
-              <Badge variant={aiCheck.ai_probability < 30 ? "default" : "destructive"}>
-                {aiCheck.status}
-              </Badge>
-            </div>
-            <ScoreBar score={100 - aiCheck.ai_probability} label="Human Code Probability" />
-            <p className="text-sm text-muted-foreground">{aiCheck.details}</p>
-          </CardContent>
-        </Card>
-
-        <Card variant="interactive" className="animate-fade-in">
-          <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-accent" />
-              Timeline Consistency
+              Followers
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <ScoreBar score={timeline.consistency_score} label="Consistency Score" />
-            <p className="text-sm text-muted-foreground">{timeline.details}</p>
-          </CardContent>
-        </Card>
-
-        <Card variant="interactive" className="animate-fade-in">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-accent" />
-              Repository Health
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ScoreBar score={repoHealth.score} label="Health Score" />
-            <p className="text-sm text-muted-foreground">{repoHealth.details}</p>
+          <CardContent>
+            <div className="text-center">
+              <span className="text-5xl font-bold text-accent">{profile?.followers ?? 0}</span>
+              <p className="text-muted-foreground mt-2">Followers</p>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card variant="elevated" className="animate-fade-in">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Code className="h-5 w-5 text-accent" />
-            Skill Validation
-          </CardTitle>
-          <CardDescription>Proficiency Level: <Badge variant="default">{skillValidation.proficiency}</Badge></CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {skillValidation.derived_skills.length > 0 ? (
-              skillValidation.derived_skills.map((skill) => (
-                <Badge key={skill} variant="secondary" className="text-base px-4 py-2">
-                  {skill}
+      {/* Languages/Skills */}
+      {languages.length > 0 && (
+        <Card variant="accent" className="animate-fade-in">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Code className="h-5 w-5 text-accent" />
+              Technologies Used
+            </CardTitle>
+            <CardDescription>Languages detected across repositories</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {languages.map((lang) => (
+                <Badge key={lang} variant="secondary" className="text-base px-4 py-2">
+                  {lang}
                 </Badge>
-              ))
-            ) : (
-              <p className="text-muted-foreground text-sm">No skills derived</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Repositories */}
+      {repos.length > 0 && (
+        <Card variant="elevated" className="animate-fade-in">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <GitBranch className="h-5 w-5 text-accent" />
+              Repositories ({repos.length})
+            </CardTitle>
+            <CardDescription>Public repositories analysis</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              {repos.map((repo, index) => (
+                <div 
+                  key={repo.name || index} 
+                  className="p-4 rounded-lg border border-border bg-card/50 hover:bg-card transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-foreground truncate">{repo.name}</h4>
+                      {repo.description && (
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          {repo.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4 flex-shrink-0">
+                      {repo.language && (
+                        <Badge variant="secondary">{repo.language}</Badge>
+                      )}
+                      <div className="flex items-center gap-1 text-warning">
+                        <Star className="h-4 w-4" />
+                        <span className="font-medium">{repo.stargazers_count}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {repos.length === 0 && (
+        <Card variant="default" className="animate-fade-in">
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground">No repositories found for this profile</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
@@ -433,7 +378,7 @@ export default function CandidateEvaluation() {
       console.log("GitHub API Response:", result);
       toast({
         title: "Analysis Complete",
-        description: `Successfully analyzed @${result.username}`,
+        description: `Successfully analyzed @${result.profile?.login ?? 'unknown'}`,
       });
     },
     onError: (error: Error) => {
