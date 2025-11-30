@@ -258,29 +258,34 @@ export default function Compare() {
             <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
               {comparisonResults
                 .sort((a, b) => b.overall_score - a.overall_score)
-                .map((result, index) => (
-                  <Card 
-                    key={result.candidate_id} 
-                    variant="interactive" 
-                    className="animate-slide-up cursor-pointer" 
-                    style={{ animationDelay: `${index * 100}ms` }}
-                    onClick={() => window.location.href = `/candidate-evaluation?candidateId=${result.candidate_id}&jobId=${jobId}`}
-                  >
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-3">
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
-                          {index + 1}
-                        </span>
-                        {result.name}
-                      </CardTitle>
-                    </CardHeader>
+                .map((result, index) => {
+                  const candidate = selectedCandidates.find(c => String(c.id) === String(result.candidate_id));
+                  const displayName = candidate?.name || result.name;
+                  
+                  return (
+                    <Card 
+                      key={result.candidate_id} 
+                      variant="interactive" 
+                      className="animate-slide-up cursor-pointer" 
+                      style={{ animationDelay: `${index * 100}ms` }}
+                      onClick={() => window.location.href = `/candidate-evaluation?candidateId=${result.candidate_id}&jobId=${jobId}`}
+                    >
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-3">
+                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
+                            {index + 1}
+                          </span>
+                          {displayName}
+                        </CardTitle>
+                      </CardHeader>
                     <CardContent className="space-y-6">
                       <div className="flex justify-center">
                         <ScoreCircle score={result.overall_score} size="lg" label="Overall Score" />
                       </div>
                     </CardContent>
                   </Card>
-                ))}
+                  );
+                })}
             </div>
           </div>
         )}
