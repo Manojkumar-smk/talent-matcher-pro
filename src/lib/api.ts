@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://ai-portfolio-validator-2.onrender.com";
+const PROXY_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api-proxy`;
 
 export interface Candidate {
   id: number;
@@ -46,9 +46,20 @@ export interface EvaluationResult {
   github_analysis?: GitHubAnalysis;
 }
 
+async function proxyFetch(path: string, options?: RequestInit): Promise<Response> {
+  const url = `${PROXY_URL}?path=${encodeURIComponent(path)}`;
+  return fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers,
+    },
+  });
+}
+
 // Candidates API
 export async function getCandidates(): Promise<Candidate[]> {
-  const response = await fetch(`${API_BASE_URL}/api/candidates/`);
+  const response = await proxyFetch('/api/candidates/');
   if (!response.ok) {
     throw new Error('Failed to fetch candidates');
   }
@@ -56,9 +67,14 @@ export async function getCandidates(): Promise<Candidate[]> {
 }
 
 export async function createCandidate(formData: FormData): Promise<{ message: string; data: Candidate }> {
-  const response = await fetch(`${API_BASE_URL}/api/candidates/`, {
+  const data: Record<string, string> = {};
+  formData.forEach((value, key) => {
+    data[key] = value.toString();
+  });
+  
+  const response = await proxyFetch('/api/candidates/', {
     method: 'POST',
-    body: formData,
+    body: JSON.stringify(data),
   });
   if (!response.ok) {
     throw new Error('Failed to create candidate');
@@ -68,7 +84,7 @@ export async function createCandidate(formData: FormData): Promise<{ message: st
 
 // Jobs API
 export async function getJobs(): Promise<Job[]> {
-  const response = await fetch(`${API_BASE_URL}/api/jobs/`);
+  const response = await proxyFetch('/api/jobs/');
   if (!response.ok) {
     throw new Error('Failed to fetch jobs');
   }
@@ -76,11 +92,8 @@ export async function getJobs(): Promise<Job[]> {
 }
 
 export async function createJob(job: Omit<Job, 'id'>): Promise<{ message: string; data: Job }> {
-  const response = await fetch(`${API_BASE_URL}/api/jobs/`, {
+  const response = await proxyFetch('/api/jobs/', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify(job),
   });
   if (!response.ok) {
@@ -91,11 +104,8 @@ export async function createJob(job: Omit<Job, 'id'>): Promise<{ message: string
 
 // Analysis API
 export async function evaluateCandidate(candidateId: number, jobId?: string): Promise<EvaluationResult> {
-  const response = await fetch(`${API_BASE_URL}/api/analysis/evaluate/`, {
+  const response = await proxyFetch('/api/analysis/evaluate/', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({ candidate_id: candidateId, job_id: jobId }),
   });
   if (!response.ok) {
@@ -105,11 +115,8 @@ export async function evaluateCandidate(candidateId: number, jobId?: string): Pr
 }
 
 export async function compareCandidates(candidateIds: string[]): Promise<{ candidate_id: string; name: string; overall_score: number }[]> {
-  const response = await fetch(`${API_BASE_URL}/api/analysis/compare/`, {
+  const response = await proxyFetch('/api/analysis/compare/', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({ candidate_ids: candidateIds }),
   });
   if (!response.ok) {
@@ -120,11 +127,8 @@ export async function compareCandidates(candidateIds: string[]): Promise<{ candi
 
 // GitHub Deep Check
 export async function githubDeepCheck(githubUrl: string): Promise<GitHubAnalysis> {
-  const response = await fetch(`${API_BASE_URL}/api/analysis/github-check/`, {
+  const response = await proxyFetch('/api/analysis/github-check/', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({ github_url: githubUrl }),
   });
   if (!response.ok) {
